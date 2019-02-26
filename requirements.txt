@@ -1,1 +1,2 @@
-pyramid
+pyramid==1.10.2
+influxdb
