@@ -1,0 +1,6 @@
+{
+  "scripts": {
+      "build": "echo 'Nothing to builds'",
+      "serve": "./entrypoint 0.0.0.0:${PORT}"
+  }
+}
