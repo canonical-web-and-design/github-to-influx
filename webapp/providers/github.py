@@ -5,7 +5,6 @@ from webapp.influxdb import client
 def build_blueprint():
 
     github = flask.Blueprint("github", __name__)
-    client.create_database("githubdb")
 
     @github.route("/", methods=["GET"])
     def enabled():
