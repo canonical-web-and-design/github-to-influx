@@ -1,7 +1,8 @@
 import flask
 
-from webapp.providers import github, usabilla
+from webapp.providers.github import github
+from webapp.providers.usabilla import usabilla
 
 app = flask.Flask(__name__)
-app.register_blueprint(github.build_blueprint(), url_prefix="/github")
-app.register_blueprint(usabilla.build_blueprint(), url_prefix="/usabilla")
+app.register_blueprint(github, url_prefix="/github")
+app.register_blueprint(usabilla, url_prefix="/usabilla")
