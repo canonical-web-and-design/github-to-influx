@@ -38,7 +38,7 @@ def webhook():
         flask.abort(400)
 
     if not verify_signature(
-        headers=flask.headers,
+        headers=flask.request.headers,
         data=flask.request.data,
         secret=GITHUB_SECRET_KEY,
     ):
@@ -60,7 +60,7 @@ def webhook():
                 organisation=data["organization"]["login"],
                 project=data["repository"]["name"],
             )
-        elif flask.request.headers["X-Github-Event"] == "pull_requests":
+        elif flask.request.headers["X-Github-Event"] == "pull_request":
             print("pull_requests event received")
 
     return "", 200
