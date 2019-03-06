@@ -1,5 +1,3 @@
-import time
-from time import mktime
 from datetime import datetime
 
 import flask
