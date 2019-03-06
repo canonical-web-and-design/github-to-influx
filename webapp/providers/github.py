@@ -10,8 +10,8 @@ GITHUB_SECRET_KEY = os.getenv("GITHUB_SECRET_KEY")
 github = flask.Blueprint("github", __name__)
 
 
-def verify_signature():
-    header_signature = flask.request.headers.get("X-Hub-Signature")
+def verify_signature(headers, data, secret):
+    header_signature = headers.get("X-Hub-Signature")
     if header_signature is None:
         return False
 
@@ -19,11 +19,7 @@ def verify_signature():
     if sha_name != "sha1":
         return False
 
-    mac = hmac.new(
-        bytes(GITHUB_SECRET_KEY.encode()),
-        msg=bytes(flask.request.data),
-        digestmod="sha1",
-    )
+    mac = hmac.new(bytes(secret.encode()), msg=bytes(data), digestmod="sha1")
 
     if not hmac.compare_digest(str(mac.hexdigest()), str(signature)):
         return False
@@ -41,18 +37,16 @@ def webhook():
     if not flask.request.json:
         flask.abort(400)
 
-    if not verify_signature():
+    if not verify_signature(
+        headers=flask.headers,
+        data=flask.request.data,
+        secret=GITHUB_SECRET_KEY,
+    ):
         flask.abort(401)
 
     data = flask.request.json
-    print(flask.request.headers)
     if "X-Github-Event" in flask.request.headers:
-        if flask.request.headers["X-Github-Event"] == "ping":
-            print("I JUST GOT PINGED")
-        elif flask.request.headers["X-Github-Event"] == "push":
-            print("No. commits in push:", len(data["commits"]))
-        elif flask.request.headers["X-Github-Event"] == "issues":
-
+        if flask.request.headers["X-Github-Event"] == "issues":
             fields = {
                 "open_issues_count": data["repository"]["open_issues_count"],
                 "latest_opened_issue": data["sender"]["login"],
@@ -60,16 +54,14 @@ def webhook():
             }
 
             payload_to_influx(
-                "open_issues",
-                fields,
-                data["issue"]["created_at"],
-                data["organization"]["login"],
-                data["repository"]["name"],
+                measurement="open_issues",
+                fields=fields,
+                timestamp=data["issue"]["created_at"],
+                organisation=data["organization"]["login"],
+                project=data["repository"]["name"],
             )
-
         elif flask.request.headers["X-Github-Event"] == "pull_requests":
-            print("PR", data["action"])
-            print("No. Commits in PR:", data["pull_request"]["commits"])
+            print("pull_requests event received")
 
     return "", 200
 
