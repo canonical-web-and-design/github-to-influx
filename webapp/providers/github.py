@@ -1,8 +1,34 @@
+import hmac
+import os
+
 import flask
+
 from webapp.influxdb import client
 
+GITHUB_SECRET_KEY = os.getenv("GITHUB_SECRET_KEY")
 
 github = flask.Blueprint("github", __name__)
+
+
+def verify_signature():
+    header_signature = flask.request.headers.get("X-Hub-Signature")
+    if header_signature is None:
+        return False
+
+    sha_name, signature = header_signature.split("=")
+    if sha_name != "sha1":
+        return False
+
+    mac = hmac.new(
+        bytes(GITHUB_SECRET_KEY.encode()),
+        msg=bytes(flask.request.data),
+        digestmod="sha1",
+    )
+
+    if not hmac.compare_digest(str(mac.hexdigest()), str(signature)):
+        return False
+
+    return True
 
 
 @github.route("/", methods=["GET"])
@@ -14,6 +40,9 @@ def enabled():
 def webhook():
     if not flask.request.json:
         flask.abort(400)
+
+    if not verify_signature():
+        flask.abort(401)
 
     data = flask.request.json
     print(flask.request.headers)
