@@ -3,11 +3,14 @@ import os
 
 import flask
 
+from canonicalwebteam.http import Session
 from webapp.influxdb import client
 
 GITHUB_SECRET_KEY = os.getenv("GITHUB_SECRET_KEY")
 
 github = flask.Blueprint("github", __name__)
+
+api_session = Session()
 
 
 def verify_signature(headers, data, secret):
@@ -25,6 +28,13 @@ def verify_signature(headers, data, secret):
         return False
 
     return True
+
+
+def process_response(response):
+    if not response.ok:
+        raise Exception("Error from api: " + response.status_code)
+
+    return response.json()
 
 
 @github.route("/", methods=["GET"])
@@ -61,7 +71,28 @@ def webhook():
                 project=data["repository"]["name"],
             )
         elif flask.request.headers["X-Github-Event"] == "pull_request":
-            print("pull_requests event received")
+            if data["action"] in ["opened", "reopened", "closed"]:
+                pulls_url = data["repository"]["pulls_url"]
+
+                try:
+                    response = api_session.get(pulls_url[:-9])
+                    json = process_response(response)
+
+                    fields = {
+                        "open_prs_count": len(json),
+                        "latest_opened_prs": data["sender"]["login"],
+                        "latest_title_prs": data["pull_request"]["title"],
+                    }
+
+                    payload_to_influx(
+                        measurement="open_prs",
+                        fields=fields,
+                        timestamp=data["pull_request"]["updated_at"],
+                        organisation=data["organization"]["login"],
+                        project=data["repository"]["name"],
+                    )
+                except Exception:
+                    return "", 500
 
     return "", 200
 
