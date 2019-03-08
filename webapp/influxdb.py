@@ -17,5 +17,3 @@ client = InfluxDBClient(
     INFLUXDB_CONFIG["USERNAME"],
     INFLUXDB_CONFIG["DATABASE"],
 )
-
-client.create_database(INFLUXDB_CONFIG["DATABASE"])
