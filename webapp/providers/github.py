@@ -1,5 +1,6 @@
 import hmac
 import os
+import logging
 
 import flask
 
@@ -16,21 +17,21 @@ api_session = Session()
 def verify_signature(headers, data, secret):
     header_signature = headers.get("X-Hub-Signature")
     if header_signature is None:
-        print("No header")
+        logging.getLogger(__name__).info("No header")
         return False
 
     sha_name, signature = header_signature.split("=")
     if sha_name != "sha1":
-        print("No sha1")
+        logger.info("No sha1")
         return False
 
     mac = hmac.new(bytes(secret.encode()), msg=bytes(data), digestmod="sha1")
 
     if not hmac.compare_digest(str(mac.hexdigest()), str(signature)):
-        print("Bad digest")
-        print("Header received: " + str(signature))
-        print("Header generated: " + str(mac.hexdigest()))
-        print("Secret: " + secret)
+        logging.getLogger(__name__).info("Bad digest")
+        logging.getLogger(__name__).info("Header received: " + str(signature))
+        logging.getLogger(__name__).info("Header generated: " + str(mac.hexdigest()))
+        logging.getLogger(__name__).info("Secret: " + secret)
         return False
 
     return True
@@ -98,7 +99,7 @@ def webhook():
                         project=data["repository"]["name"],
                     )
                 except Exception as e:
-                    print(e)
+                    logging.getLogger(__name__).info(e)
                     return "", 500
 
     return "", 200
@@ -119,4 +120,7 @@ def payload_to_influx(
         }
     ]
 
-    client.write_points(json_body)
+    try:
+        client.write_points(json_body)
+    except Exception as e:
+        logging.getLogger(__name__).info(e)
