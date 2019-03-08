@@ -30,7 +30,9 @@ def verify_signature(headers, data, secret):
     if not hmac.compare_digest(str(mac.hexdigest()), str(signature)):
         logging.getLogger(__name__).info("Bad digest")
         logging.getLogger(__name__).info("Header received: " + str(signature))
-        logging.getLogger(__name__).info("Header generated: " + str(mac.hexdigest()))
+        logging.getLogger(__name__).info(
+            "Header generated: " + str(mac.hexdigest())
+        )
         logging.getLogger(__name__).info("Secret: " + secret)
         return False
 
