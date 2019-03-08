@@ -1,4 +1,5 @@
 influxdb==5.2.1
 Flask==1.0.2
 talisker==0.11.1
+raven[flask]==6.5.0
 canonicalwebteam.http==1.0.1

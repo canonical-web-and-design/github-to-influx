@@ -22,7 +22,7 @@ def verify_signature(headers, data, secret):
 
     sha_name, signature = header_signature.split("=")
     if sha_name != "sha1":
-        logger.info("No sha1")
+        logging.getLogger(__name__).info("No sha1")
         return False
 
     mac = hmac.new(bytes(secret.encode()), msg=bytes(data), digestmod="sha1")
