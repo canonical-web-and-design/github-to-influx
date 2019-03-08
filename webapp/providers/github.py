@@ -92,7 +92,7 @@ def webhook():
                         project=data["repository"]["name"],
                     )
                 except Exception:
-                    pass
+                    return "", 500
 
     return "", 200
 
