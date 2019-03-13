@@ -5,7 +5,7 @@ from influxdb import InfluxDBClient
 INFLUXDB_CONFIG = {
     "HOST": os.getenv("INFLUXDB_HOST"),
     "PORT": os.getenv("INFLUXDB_PORT"),
-    "USERNAME": os.getenv("INFLUXDB_USERNAME"),
+    "USER": os.getenv("INFLUXDB_USER"),
     "PASSWORD": os.getenv("INFLUXDB_PASSWORD"),
     "DATABASE": os.getenv("INFLUXDB_DATABASE"),
 }
@@ -13,7 +13,7 @@ INFLUXDB_CONFIG = {
 client = InfluxDBClient(
     INFLUXDB_CONFIG["HOST"],
     INFLUXDB_CONFIG["PORT"],
-    INFLUXDB_CONFIG["USERNAME"],
+    INFLUXDB_CONFIG["USER"],
     INFLUXDB_CONFIG["PASSWORD"],
     INFLUXDB_CONFIG["DATABASE"],
 )
